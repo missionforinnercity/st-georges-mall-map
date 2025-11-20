@@ -1,6 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Mission for Inner City: St George's Mall</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- MAPBOX RESOURCES -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    
+    <!-- SCROLLAMA FOR SCROLLYTELLING -->
+    <script src="https://unpkg.com/scrollama"></script>
+
+    <!-- BRAND FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- BRAND VARIABLES --- */
+        :root {
+            --mission-green-light: #6bd69e;
+            --mission-green-dark: #0d332b;
+            --mission-pink: #f7b8d6;
+            --mission-white: #faf7f5;
+            --mission-orange: #ff8533;
+            --mission-black: #000000;
+        }
+
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Libre Franklin', sans-serif;
+            background: var(--mission-green-dark); 
+            color: var(--mission-white); 
+            overflow-x: hidden;
+        }
+
+        #map { position: fixed; top: 0; bottom: 0; width: 100%; height: 100vh; z-index: 0; }
+        
+        /* --- STORY OVERLAY --- */
+        #story { 
+            position: relative; 
+            z-index: 1; 
+            width: 100%; 
+            max-width: 450px; 
+            margin-left: 5%; 
+            padding-top: 20vh; 
+            pointer-events: none; 
+        }
+        
+        .step { 
+            background: var(--mission-green-dark); 
+            color: var(--mission-white); 
+            padding: 2rem; 
+            margin-bottom: 80vh; 
+            border-left: 5px solid var(--mission-green-light); 
+            opacity: 0.9;
+            pointer-events: auto; 
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 4px;
+        }
+
+        .step.active { 
+            opacity: 1; 
+            border-left: 5px solid var(--mission-pink); 
+            background: rgba(13, 51, 43, 0.98);
+            transform: scale(1.02);
+        }
+        
+        h1 { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 3.5em; 
+            font-weight: 700; 
+            color: var(--mission-green-light); 
+            line-height: 1.1; 
+            margin-bottom: 15px; 
+        }
+        
+        h3 { 
+            font-family: 'Playfair Display', serif;
+            color: var(--mission-orange); 
+            font-size: 1.8em;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        p { 
+            font-size: 1.1rem; 
+            line-height: 1.6; 
+            color: var(--mission-white); 
+            font-weight: 300;
+        }
+        
+        b { font-weight: 700; color: var(--mission-pink); }
+        i { color: #ccc; }
+
+        /* --- POPUP STYLING --- */
+        .mapboxgl-popup { max-width: 200px; z-index: 20; }
+        .mapboxgl-popup-content {
+            background: var(--mission-green-dark);
+            color: var(--mission-white);
+            border: 1px solid var(--mission-orange);
+            font-family: 'Libre Franklin', sans-serif;
+            padding: 10px 15px;
+            border-radius: 4px;
+        }
+        .mapboxgl-popup-tip {
+            border-top-color: var(--mission-orange) !important;
+            border-bottom-color: var(--mission-orange) !important;
+        }
+        .popup-title {
+            font-family: 'Playfair Display', serif;
+            color: var(--mission-orange);
+            font-weight: bold;
+            font-size: 1.1em;
+            display: block;
+        }
+
+        .chart-placeholder { 
+            width: 100%; 
+            height: 150px; 
+            background: rgba(255, 255, 255, 0.05); 
+            margin-top: 15px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: var(--mission-green-light); 
+            font-family: 'Libre Franklin', sans-serif;
+            font-size: 0.8em; 
+            border: 1px dashed var(--mission-green-light); 
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div id="story">
+    <!-- INTRO -->
+    <div class="step" data-location="intro">
+        <h1>St. George's<br>Mall 2025</h1>
+        <p>A spatial analysis of user experience, informal economy, and pedestrian vitality in Cape Town's civic spine.</p>
+        <p><i>Scroll to explore the findings.</i></p>
+    </div>
+
+    <!-- BLOCK 1: COFFEE & BIKES -->
+    <div class="step" data-location="block1" data-layer="coffee-delivery">
+        <h3>The Gateway</h3>
+        <p><b>Wale to Church Street.</b></p>
+        <p>The user perceives this space as generally safe. High prevalence of coffee establishments creates a tourist cluster.</p>
+        <p><i>Hover over the Orange dots to see cafe names.</i></p>
+        <hr style="border: 0; border-top: 1px solid #444; margin: 20px 0;">
+        <p><b style="color:#fff;">The Conflict:</b> See the white streaks? Delivery bikes move unexpectedly fast here, utilizing the open space to cut through.</p>
+    </div>
+
+    <!-- BLOCK 2: TRADERS -->
+    <div class="step" data-location="block2" data-layer="traders">
+        <h3>Informal Economy</h3>
+        <p><b>Church to Longmarket.</b></p>
+        <p>This is one of the most convivial blocks. Trees line the walkway, but there is a dominance of informal traders.</p>
+        <p><b>Insight:</b> Clothing and Fashion make up 72.5% of trader offerings.</p>
+        <div class="chart-placeholder">[Chart: Trader Product Categories]</div>
+    </div>
+
+    <!-- FORESHORE -->
+    <div class="step" data-location="foreshore" data-layer="counts">
+        <h3>Foreshore Gateway</h3>
+        <p><b>Alpha & Jetty Street.</b></p>
+        <p>Pedestrian movement peaks here. <span style="color: var(--mission-pink); font-weight:bold; font-size:1.2em;">1,024 people</span> recorded entering the Foreshore at Alpha St during the AM peak.</p>
+        <p><i>Issue: High volume but weak infrastructure.</i></p>
+    </div>
+    
+    <!-- OUTRO -->
+    <div class="step" data-location="overview">
+        <h3>Strategic Overview</h3>
+        <p>90% of informal traders are located between Wale and Riebeek. The mall functions as two distinct zones: the active retail heart and the transit-heavy foreshore.</p>
+    </div>
+</div>
+
 <script>
+    // --- CONFIGURATION ---
+    // Your Mapbox Token
     mapboxgl.accessToken = 'pk.eyJ1IjoibWZpYzI1IiwiYSI6ImNtaGl6cjkzeTB3cHEya3F2NGg0bnZtcHgifQ.n_hXUOk7pbvFkf06XBvmcA'; 
     
+    // Initialize Map
     const map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/dark-v11', 
@@ -8,41 +194,16 @@
         zoom: 16,
         pitch: 0,
         bearing: -20,
-        scrollZoom: false 
+        scrollZoom: false // Prevents scroll hijacking
     });
 
-    // Animation variables
-    let animationStep = 0;
+    // Animation Variable
+    let dashOffset = 0;
 
-    // --- 1. GENERATE THE PHOTON TEXTURE (The Shooting Star) ---
-    // This creates a gradient image in memory so you don't need to upload a PNG
-    function generatePhotonImage() {
-        const width = 64; // Length of the "streak"
-        const bytes = new Uint8Array(width * width * 4);
-
-        for (let y = 0; y < width; y++) {
-            for (let x = 0; x < width; x++) {
-                const offset = (y * width + x) * 4;
-                // Create a gradient: Fade in -> Bright White -> Fade out
-                // This math creates a "comet" shape
-                const intensity = Math.max(0, 1 - Math.abs(x - width / 2) / (width / 4));
-                
-                // Color: Mission White #faf7f5 (R:250, G:247, B:245)
-                bytes[offset + 0] = 250; // Red
-                bytes[offset + 1] = 247; // Green
-                bytes[offset + 2] = 245; // Blue
-                bytes[offset + 3] = intensity * 255; // Alpha (Transparency)
-            }
-        }
-        return { width: width, height: width, data: bytes };
-    }
-
+    // --- ON LOAD ---
     map.on('load', () => {
         
-        // Add the generated image to the map style
-        map.addImage('photon-streak', generatePhotonImage());
-
-        // 1. 3D Buildings
+        // 1. ADD 3D BUILDINGS
         map.addLayer({
             'id': '3d-buildings',
             'source': 'composite',
@@ -51,30 +212,17 @@
             'type': 'fill-extrusion',
             'minzoom': 15,
             'paint': {
-                'fill-extrusion-color': '#0d332b',
+                'fill-extrusion-color': '#0d332b', // Brand Dark Green
                 'fill-extrusion-height': ['get', 'height'],
                 'fill-extrusion-base': ['get', 'min_height'],
-                'fill-extrusion-opacity': 0.6
+                'fill-extrusion-opacity': 0.8
             }
         });
 
-        // 2. DATA SOURCES
+        // 2. ADD SOURCES (Data)
         
-        // Traders
-        map.addSource('traders-mock', {
-            type: 'geojson',
-            data: {
-                "type": "FeatureCollection",
-                "features": [
-                    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [18.4202, -33.9236] } },
-                    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [18.4207, -33.9231] } },
-                    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [18.4212, -33.9227] } }
-                ]
-            }
-        });
-
         // Coffee Shops
-        map.addSource('coffee-mock', {
+        map.addSource('coffee-source', {
             type: 'geojson',
             data: {
                 "type": "FeatureCollection",
@@ -86,17 +234,17 @@
             }
         });
 
-        // Delivery Bike Routes
-        map.addSource('delivery-mock', {
+        // Delivery Routes (LineStrings)
+        map.addSource('delivery-source', {
             type: 'geojson',
             data: {
                 "type": "FeatureCollection",
                 "features": [
-                    // Main flow
+                    // Main Path
                     { "type": "Feature", "geometry": { "type": "LineString", "coordinates": [
                         [18.4195, -33.9243], [18.4199, -33.9239], [18.4202, -33.9236], [18.4206, -33.9232]
                     ]}},
-                    // Offshoot 1
+                    // Side Path
                     { "type": "Feature", "geometry": { "type": "LineString", "coordinates": [
                         [18.4199, -33.9239], [18.4194, -33.9235] 
                     ]}}
@@ -104,242 +252,195 @@
             }
         });
 
-        // Counts Data
-        map.addSource('counts-mock', {
+        // Traders
+        map.addSource('traders-source', {
             type: 'geojson',
             data: {
                 "type": "FeatureCollection",
                 "features": [
-                    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [18.4242, -33.9178] }, "properties": {"count": 1000} }
+                    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [18.4202, -33.9236] } },
+                    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [18.4207, -33.9231] } },
+                    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [18.4212, -33.9227] } }
                 ]
             }
         });
 
-        // 3. ADD LAYERS
-
-        // -- Delivery Background (The faint road) --
-        map.addLayer({
-            'id': 'delivery-base',
-            'type': 'line',
-            'source': 'delivery-mock',
-            'paint': {
-                'line-color': '#faf7f5',
-                'line-width': 1,
-                'line-opacity': 0 // Hidden initially
+        // Counts
+        map.addSource('counts-source', {
+            type: 'geojson',
+            data: {
+                "type": "FeatureCollection",
+                "features": [
+                    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [18.4242, -33.9178] } }
+                ]
             }
         });
 
-        // -- Delivery Photon (The moving light) --
+        // 3. ADD LAYERS (Visuals)
+
+        // Delivery - The "Laser Bolt" Animation
         map.addLayer({
-            'id': 'delivery-photon',
+            'id': 'delivery-layer',
             'type': 'line',
-            'source': 'delivery-mock',
+            'source': 'delivery-source',
             'paint': {
-                'line-width': 6,
-                'line-pattern': 'photon-streak', // Applies our generated image
-                'line-opacity': 0 // Hidden initially
+                'line-color': '#faf7f5', // Mission White
+                'line-width': 5,
+                'line-opacity': 0, // Hidden initially
+                'line-dasharray': [0.5, 4] // Short dash, long gap
             }
         });
 
-        // Coffee Shops
+        // Coffee Shops - Orange Dots
         map.addLayer({
             'id': 'coffee-layer',
             'type': 'circle',
-            'source': 'coffee-mock',
+            'source': 'coffee-source',
             'paint': {
-                'circle-radius': 7,
+                'circle-radius': 8,
                 'circle-color': '#ff8533', // Mission Orange
-                'circle-opacity': 0, 
                 'circle-stroke-width': 2,
-                'circle-stroke-color': '#0d332b'
+                'circle-stroke-color': '#0d332b',
+                'circle-opacity': 0, // Hidden initially
+                'circle-stroke-opacity': 0
             }
         });
 
-        // Traders
+        // Traders - Pink Dots
         map.addLayer({
             'id': 'traders-layer',
             'type': 'circle',
-            'source': 'traders-mock',
+            'source': 'traders-source',
             'paint': {
-                'circle-radius': 8,
+                'circle-radius': 6,
                 'circle-color': '#f7b8d6', // Mission Pink
-                'circle-opacity': 0, 
                 'circle-stroke-width': 1,
-                'circle-stroke-color': '#fff'
+                'circle-stroke-color': '#fff',
+                'circle-opacity': 0,
+                'circle-stroke-opacity': 0
             }
         });
 
-        // Counts
+        // Counts - Large Orange Circles
         map.addLayer({
             'id': 'counts-layer',
             'type': 'circle',
-            'source': 'counts-mock',
+            'source': 'counts-source',
             'paint': {
-                'circle-radius': 25,
+                'circle-radius': 30,
                 'circle-color': '#ff8533', 
-                'circle-opacity': 0, 
-                'circle-blur': 0.4
+                'circle-opacity': 0,
+                'circle-blur': 0.5
             }
         });
 
-        // 4. INTERACTION: COFFEE HOVER POPUPS
-        const popup = new mapboxgl.Popup({
-            closeButton: false,
-            closeOnClick: false
-        });
-
-        map.on('mouseenter', 'coffee-layer', (e) => {
-            map.getCanvas().style.cursor = 'pointer';
-            const coordinates = e.features[0].geometry.coordinates.slice();
-            const description = e.features[0].properties.name;
-
-            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        // 4. START ANIMATION LOOP
+        const animateDash = () => {
+            // Move the dash offset to create flow
+            dashOffset = (dashOffset - 0.2) % 10;
+            
+            // Only animate if layer exists
+            if (map.getLayer('delivery-layer')) {
+                map.setPaintProperty('delivery-layer', 'line-dashoffset', dashOffset);
             }
-
-            popup.setLngLat(coordinates)
-                .setHTML(`<span class="popup-title">${description}</span>`)
-                .addTo(map);
-        });
-
-        map.on('mouseleave', 'coffee-layer', () => {
-            map.getCanvas().style.cursor = '';
-            popup.remove();
-        });
-
-
-        // 5. NEW ANIMATION LOOP (Photon Effect)
-        function animatePhoton() {
-            animationStep = (animationStep + 1) % 512; // Cycle speed
             
-            // This moves the pattern along the line
-            if (map.getLayer('delivery-photon')) {
-                // We divide by 10 to make it smoother
-                map.setPaintProperty('delivery-photon', 'line-pattern-progress', animationStep / 10);
-            }
-            requestAnimationFrame(animatePhoton);
-        }
-        
-        // Start animation (Wait a tiny bit for map to be ready)
-        setTimeout(() => {
-            // NOTE: "line-pattern" creates a static texture. 
-            // To move it, we actually animate "line-translate" or use a different trick.
-            // BUT, the easiest way in standard Mapbox to get a "flow" is actually 
-            // moving the dash-array or using a pattern with a shift.
-            
-            // Actually, standard Mapbox GL doesn't support 'line-pattern-offset' natively in older versions.
-            // Let's switch to the 'Moving Dash' method but make the dash look like a photon.
-            // It's cleaner for this version.
-            
-            const dashArraySequence = [
-                [0, 4, 3],
-                [0.5, 4, 2.5],
-                [1, 4, 2],
-                [1.5, 4, 1.5],
-                [2, 4, 1],
-                [2.5, 4, 0.5],
-                [3, 4, 0],
-                [0, 0.5, 3, 3.5]
-            ];
-            
-            let step = 0;
-            function animateDash() {
-                step = (step + 1) % 256; 
-                // This technique slides the "gap" in the line
-                if(map.getLayer('delivery-photon')) {
-                     map.setPaintProperty('delivery-photon', 'line-pattern-transform', {
-                        "y": step // This shifts the texture along the line!
-                     });
-                }
-                requestAnimationFrame(animateDash);
-            }
-            animateDash();
-        }, 1000);
+            requestAnimationFrame(animateDash);
+        };
+        animateDash();
 
     });
 
-    // 6. SCROLL INTERACTION
+    // 5. HOVER POPUPS (Coffee)
+    const popup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false
+    });
+
+    map.on('mouseenter', 'coffee-layer', (e) => {
+        map.getCanvas().style.cursor = 'pointer';
+        const coordinates = e.features[0].geometry.coordinates.slice();
+        const name = e.features[0].properties.name;
+
+        // Ensure popup appears over the point
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+
+        popup.setLngLat(coordinates).setHTML(`<span class="popup-title">${name}</span>`).addTo(map);
+    });
+
+    map.on('mouseleave', 'coffee-layer', () => {
+        map.getCanvas().style.cursor = '';
+        popup.remove();
+    });
+
+    // 6. SCROLLAMA (Story Logic)
     const scroller = scrollama();
 
+    // Camera locations for each step
     const locations = {
-        'intro': { center: [18.4196, -33.9241], zoom: 16, pitch: 0 },
-        'block1': { center: [18.4196, -33.9241], zoom: 18, pitch: 45 },
-        'block2': { center: [18.4202, -33.9236], zoom: 18.5, pitch: 60 },
-        'foreshore': { center: [18.4242, -33.9178], zoom: 17, pitch: 45 },
-        'overview': { center: [18.422, -33.921], zoom: 15, pitch: 0 }
+        'intro': { center: [18.4196, -33.9241], zoom: 16, pitch: 0, bearing: -20 },
+        'block1': { center: [18.4196, -33.9241], zoom: 18, pitch: 50, bearing: -20 },
+        'block2': { center: [18.4202, -33.9236], zoom: 18.5, pitch: 60, bearing: -20 },
+        'foreshore': { center: [18.4242, -33.9178], zoom: 17.5, pitch: 50, bearing: -20 },
+        'overview': { center: [18.422, -33.921], zoom: 15.5, pitch: 0, bearing: -20 }
     };
 
     scroller
         .setup({
             step: '.step',
-            offset: 0.5,
+            offset: 0.6, // Trigger when element is 60% down screen
             debug: false
         })
         .onStepEnter(response => {
-            const step = response.element;
-            const loc = step.getAttribute('data-location');
-            const layer = step.getAttribute('data-layer');
-
+            const loc = response.element.getAttribute('data-location');
+            const layer = response.element.getAttribute('data-layer');
+            
+            // 1. Fly to Location
             if (locations[loc]) {
                 map.flyTo({ ...locations[loc], essential: true, speed: 0.8 });
             }
 
-            // 1. Intro: Hide all
-            if (loc === 'intro') {
-                toggleLayer('traders-layer', 0);
-                toggleLayer('coffee-layer', 0);
-                toggleLayer('delivery-base', 0);
-                toggleLayer('delivery-photon', 0);
-                toggleLayer('counts-layer', 0);
-            }
+            // 2. Toggle Layers based on "data-layer" attribute
+            
+            // Reset all first (Clean slate)
+            setOpacity('coffee-layer', 0);
+            setOpacity('delivery-layer', 0);
+            setOpacity('traders-layer', 0);
+            setOpacity('counts-layer', 0);
 
-            // 2. Block 1: Coffee + Delivery (SHOW THE PHOTON)
+            // Turn on specific layers
             if (layer === 'coffee-delivery') {
-                toggleLayer('traders-layer', 0);
-                toggleLayer('coffee-layer', 1);
-                toggleLayer('delivery-base', 0.2); // Faint track
-                toggleLayer('delivery-photon', 1); // Bright moving light
-                toggleLayer('counts-layer', 0);
+                setOpacity('coffee-layer', 1);
+                setOpacity('delivery-layer', 1); // Show streaks
             }
-
-            // 3. Block 2: Traders
             if (layer === 'traders') {
-                toggleLayer('traders-layer', 1);
-                toggleLayer('coffee-layer', 0);
-                toggleLayer('delivery-base', 0);
-                toggleLayer('delivery-photon', 0);
-                toggleLayer('counts-layer', 0);
+                setOpacity('traders-layer', 1);
             }
-
-            // 4. Foreshore: Counts
             if (layer === 'counts') {
-                toggleLayer('traders-layer', 0);
-                toggleLayer('coffee-layer', 0);
-                toggleLayer('delivery-base', 0);
-                toggleLayer('delivery-photon', 0);
-                toggleLayer('counts-layer', 0.8);
-            }
-
-            // 5. Overview: Show all
-            if (loc === 'overview') {
-                toggleLayer('traders-layer', 0.5);
-                toggleLayer('coffee-layer', 0.5);
-                toggleLayer('delivery-base', 0);
-                toggleLayer('delivery-photon', 0);
-                toggleLayer('counts-layer', 0.5);
+                setOpacity('counts-layer', 0.8);
             }
             
+            // Highlight Text Card
             document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-            step.classList.add('active');
+            response.element.classList.add('active');
         });
 
-    function toggleLayer(id, opacity) {
-        if (map.getLayer(id)) {
-            // Check if it's a line layer or circle layer to use the right property
-            const type = map.getLayer(id).type;
-            const prop = type === 'line' ? 'line-opacity' : 'circle-opacity';
-            map.setPaintProperty(id, prop, opacity);
+    // Helper to safely set opacity
+    function setOpacity(layerId, opacity) {
+        if (map.getLayer(layerId)) {
+            // Line layers use line-opacity, others use circle-opacity
+            const prop = layerId.includes('delivery') ? 'line-opacity' : 'circle-opacity';
+            map.setPaintProperty(layerId, prop, opacity);
+            
+            // Also hide strokes for circles
+            if (!layerId.includes('delivery')) {
+                map.setPaintProperty(layerId, 'circle-stroke-opacity', opacity);
+            }
         }
     }
 
 </script>
+
+</body>
+</html>
