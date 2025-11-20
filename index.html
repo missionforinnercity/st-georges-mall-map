@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>St. George's Mall Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://unpkg.com/scrollama"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #111; color: #eee; }
+        #map { position: fixed; top: 0; bottom: 0; width: 100%; z-index: 0; }
+        
+        /* The Overlay / Story Content */
+        #story { position: relative; z-index: 1; width: 100%; max-width: 400px; margin-left: 5%; padding-top: 20vh; pointer-events: none; }
+        .step { 
+            background: rgba(0,0,0,0.85); 
+            color: #fff; 
+            padding: 20px; 
+            margin-bottom: 50vh; 
+            border-left: 4px solid #ccff00; /* Neon Green Accent */
+            opacity: 0.9;
+            pointer-events: auto;
+            transition: opacity 0.2s;
+            border-radius: 4px;
+        }
+        .step.active { opacity: 1; border-left: 4px solid #fff; box-shadow: 0 0 15px rgba(204, 255, 0, 0.2); }
+        
+        h1 { font-size: 3em; font-weight: 800; color: #ccff00; line-height: 1; margin-bottom: 10px; }
+        h3 { color: #ccff00; text-transform: uppercase; letter-spacing: 1px; margin-top: 0;}
+        p { font-size: 1rem; line-height: 1.5; color: #ccc; }
+        
+        /* Charts or Images in the cards */
+        .chart-placeholder { width: 100%; height: 150px; background: #222; margin-top: 10px; display: flex; align-items: center; justify-content: center; color: #555; font-size: 0.8em; border: 1px dashed #444; }
+
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div id="story">
+    <!-- INTRO -->
+    <div class="step" data-location="intro">
+        <h1>ST. GEORGE'S<br>MALL 2025</h1>
+        <p>A spatial analysis of user experience, informal economy, and pedestrian vitality in Cape Town's civic spine.</p>
+        <p><i>Scroll to explore the findings.</i></p>
+    </div>
+
+    <!-- BLOCK 1: UPPER MALL -->
+    <div class="step" data-location="block1" data-layer="none">
+        <h3>Block 1: The Gateway</h3>
+        <p><b>Wale to Church Street.</b></p>
+        <p>The user perceives this space as generally safe. High prevalence of coffee establishments (Mojo, Motherland) creates a tourist cluster.</p>
+        <p><i>Observation:</i> Delivery bikes move unexpectedly fast here.</p>
+    </div>
+
+    <!-- BLOCK 2: INFORMAL ECONOMY -->
+    <div class="step" data-location="block2" data-layer="traders">
+        <h3>The Informal Economy</h3>
+        <p><b>Church to Longmarket.</b></p>
+        <p>This is one of the most convivial blocks. Trees line the walkway, but there is a dominance of informal traders.</p>
+        <p><b>Data Insight:</b> Clothing and Fashion make up 72.5% of trader offerings.</p>
+        <div class="chart-placeholder">[Insert D3.js Chart: Trader Categories]</div>
+    </div>
+
+    <!-- FORESHORE: PEDESTRIAN COUNTS -->
+    <div class="step" data-location="foreshore" data-layer="counts">
+        <h3>The Foreshore Gateway</h3>
+        <p><b>Alpha & Jetty Street.</b></p>
+        <p>Pedestrian movement peaks here. 1,024 people recorded entering the Foreshore at Alpha St during the AM peak.</p>
+        <p><i>Issue:</i> High volume but weak infrastructure. 60% of pedestrians cross illegally due to long wait times.</p>
+    </div>
+    
+    <!-- OUTRO -->
+    <div class="step" data-location="overview">
+        <h3>Strategic Overview</h3>
+        <p>90% of informal traders are located between Wale and Riebeek. The mall functions as two distinct zones: the active retail heart and the transit-heavy foreshore.</p>
+    </div>
+</div>
+
+<script>
+    // 1. SETUP MAP with your API Key
+    mapboxgl.accessToken = 'pk.eyJ1IjoibWZpYzI1IiwiYSI6ImNtaGl6cjkzeTB3cHEya3F2NGg0bnZtcHgifQ.n_hXUOk7pbvFkf06XBvmcA'; 
+    
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v11', // Standard Dark Style
+        center: [18.4196, -33.9241], // Cape Town St Georges
+        zoom: 16,
+        pitch: 45, // 3D angle
+        bearing: -20
+    });
+
+    // 2. LOAD DATA
+    map.on('load', () => {
+        
+        // Add 3D Buildings
+        map.addLayer({
+            'id': '3d-buildings',
+            'source': 'composite',
+            'source-layer': 'building',
+            'filter': ['==', 'extrude', 'true'],
+            'type': 'fill-extrusion',
+            'minzoom': 15,
+            'paint': {
+                'fill-extrusion-color': '#222',
+                'fill-extrusion-height': ['get', 'height'],
+                'fill-extrusion-base': ['get', 'min_height'],
+                'fill-extrusion-opacity': 0.8
+            }
+        });
+
+        // --- PLACEHOLDER DATA (We will replace this with your excel data later) ---
+        
+        // Simulating Trader Points (Yellow Neon)
+        map.addSource('traders-mock', {
+            type: 'geojson',
+            data: {
+                "type": "FeatureCollection",
+                "features": [
+                    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [18.4202, -33.9236] } },
+                    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [18.4207, -33.9231] } }
+                ]
+            }
+        });
+
+        map.addLayer({
+            'id': 'traders-layer',
+            'type': 'circle',
+            'source': 'traders-mock',
+            'paint': {
+                'circle-radius': 6,
+                'circle-color': '#ccff00', // Neon Green/Yellow
+                'circle-opacity': 0, // Hidden initially
+                'circle-stroke-width': 1,
+                'circle-stroke-color': '#fff'
+            },
+            'transition': { 'duration': 500 }
+        });
+
+        // Simulating Pedestrian Counts (Red Circles)
+        map.addSource('counts-mock', {
+            type: 'geojson',
+            data: {
+                "type": "FeatureCollection",
+                "features": [
+                    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [18.4242, -33.9178] }, "properties": {"count": 1000} }
+                ]
+            }
+        });
+
+        map.addLayer({
+            'id': 'counts-layer',
+            'type': 'circle',
+            'source': 'counts-mock',
+            'paint': {
+                'circle-radius': 20,
+                'circle-color': '#ff0055', // Neon Red
+                'circle-opacity': 0, // Hidden initially
+                'circle-blur': 0.5
+            },
+            'transition': { 'duration': 500 }
+        });
+    });
+
+    // 3. SCROLL INTERACTION (SCROLLAMA)
+    const scroller = scrollama();
+
+    // Define where the map should look for each step
+    const locations = {
+        'intro': { center: [18.4196, -33.9241], zoom: 16, pitch: 0 },
+        'block1': { center: [18.4196, -33.9241], zoom: 18, pitch: 60 },
+        'block2': { center: [18.4202, -33.9236], zoom: 18.5, pitch: 60 },
+        'foreshore': { center: [18.4242, -33.9178], zoom: 17, pitch: 40 },
+        'overview': { center: [18.422, -33.921], zoom: 15, pitch: 0 }
+    };
+
+    scroller
+        .setup({
+            step: '.step',
+            offset: 0.5,
+            debug: false
+        })
+        .onStepEnter(response => {
+            const step = response.element;
+            const loc = step.getAttribute('data-location');
+            const layer = step.getAttribute('data-layer');
+
+            // 1. Move Map
+            if (locations[loc]) {
+                map.flyTo({
+                    ...locations[loc],
+                    essential: true,
+                    speed: 0.8
+                });
+            }
+
+            // 2. Toggle Layers (Data Visualization)
+            // This uses opacity to fade layers in and out based on the step
+            if (map.getLayer('traders-layer')) {
+                map.setPaintProperty('traders-layer', 'circle-opacity', layer === 'traders' ? 0.8 : 0);
+            }
+            if (map.getLayer('counts-layer')) {
+                map.setPaintProperty('counts-layer', 'circle-opacity', layer === 'counts' ? 0.6 : 0);
+            }
+            
+            // Highlight active text card
+            document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+            step.classList.add('active');
+        });
+
+</script>
+
+</body>
+</html>
