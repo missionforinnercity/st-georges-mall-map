@@ -12,7 +12,7 @@
     <!-- SCROLLAMA FOR SCROLLYTELLING -->
     <script src="https://unpkg.com/scrollama"></script>
 
-    <!-- BRAND FONTS (Google Alternatives) -->
+    <!-- BRAND FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
@@ -31,7 +31,7 @@
         body { 
             margin: 0; 
             padding: 0; 
-            font-family: 'Libre Franklin', sans-serif; /* Franklin Alternative */
+            font-family: 'Libre Franklin', sans-serif;
             background: var(--mission-green-dark); 
             color: var(--mission-white); 
         }
@@ -46,31 +46,30 @@
             max-width: 450px; 
             margin-left: 5%; 
             padding-top: 20vh; 
-            pointer-events: none; /* Lets clicks pass through to map */
+            pointer-events: none; 
         }
         
         .step { 
             background: var(--mission-green-dark); 
             color: var(--mission-white); 
             padding: 2rem; 
-            margin-bottom: 60vh; /* Spacing between cards */
+            margin-bottom: 70vh; 
             border-left: 5px solid var(--mission-green-light); 
             opacity: 0.9;
-            pointer-events: auto; /* Re-enable clicks on the card */
+            pointer-events: auto; 
             transition: all 0.3s ease;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* Active State (Current Card) */
         .step.active { 
             opacity: 1; 
             border-left: 5px solid var(--mission-pink); 
-            background: rgba(13, 51, 43, 0.95);
+            background: rgba(13, 51, 43, 0.98);
         }
         
         /* --- TYPOGRAPHY --- */
         h1 { 
-            font-family: 'Playfair Display', serif; /* GT Alpina Alternative */
+            font-family: 'Playfair Display', serif; 
             font-size: 3.5em; 
             font-weight: 700; 
             color: var(--mission-green-light); 
@@ -96,7 +95,32 @@
         b { font-weight: 700; color: var(--mission-pink); }
         i { color: #ccc; }
 
-        /* --- CHART PLACEHOLDER --- */
+        /* --- CUSTOM POPUP STYLING --- */
+        .mapboxgl-popup {
+            max-width: 200px;
+        }
+        .mapboxgl-popup-content {
+            background: var(--mission-green-dark);
+            color: var(--mission-white);
+            border: 1px solid var(--mission-orange);
+            font-family: 'Libre Franklin', sans-serif;
+            padding: 10px 15px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .mapboxgl-popup-tip {
+            border-top-color: var(--mission-orange) !important;
+            border-bottom-color: var(--mission-orange) !important;
+        }
+        .popup-title {
+            font-family: 'Playfair Display', serif;
+            color: var(--mission-orange);
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            display: block;
+        }
+
         .chart-placeholder { 
             width: 100%; 
             height: 150px; 
@@ -125,15 +149,18 @@
         <p><i>Scroll to explore the findings.</i></p>
     </div>
 
-    <!-- BLOCK 1 -->
-    <div class="step" data-location="block1" data-layer="none">
+    <!-- BLOCK 1: COFFEE & BIKES -->
+    <div class="step" data-location="block1" data-layer="coffee-delivery">
         <h3>The Gateway</h3>
         <p><b>Wale to Church Street.</b></p>
-        <p>The user perceives this space as generally safe. High prevalence of coffee establishments (Mojo, Motherland) creates a tourist cluster.</p>
-        <p><i>Observation: Delivery bikes move unexpectedly fast here.</i></p>
+        <p>The user perceives this space as generally safe. High prevalence of coffee establishments creates a tourist cluster.</p>
+        <p><i>Try hovering over the Orange dots to see the cafes.</i></p>
+        <p style="margin-top:20px; border-top:1px solid #555; padding-top:10px;">
+            <b style="color:var(--mission-white)">The Conflict:</b> Delivery bikes move unexpectedly fast here, utilizing the open space to cut through to side streets.
+        </p>
     </div>
 
-    <!-- BLOCK 2 -->
+    <!-- BLOCK 2: TRADERS -->
     <div class="step" data-location="block2" data-layer="traders">
         <h3>Informal Economy</h3>
         <p><b>Church to Longmarket.</b></p>
@@ -158,23 +185,24 @@
 </div>
 
 <script>
-    // 1. SETUP MAP with the provided API Key
     mapboxgl.accessToken = 'pk.eyJ1IjoibWZpYzI1IiwiYSI6ImNtaGl6cjkzeTB3cHEya3F2NGg0bnZtcHgifQ.n_hXUOk7pbvFkf06XBvmcA'; 
     
     const map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/dark-v11', 
-        center: [18.4196, -33.9241], // Start at Wale Street
+        center: [18.4196, -33.9241], 
         zoom: 16,
         pitch: 0,
         bearing: -20,
-        scrollZoom: false // <--- THIS DISABLES THE ACCIDENTAL ZOOMING
+        scrollZoom: false 
     });
 
-    // 2. LOAD DATA
+    // Animation variable for the Delivery Bikes
+    let dashOffset = 0;
+
     map.on('load', () => {
         
-        // Add 3D Buildings for depth
+        // 1. 3D Buildings
         map.addLayer({
             'id': '3d-buildings',
             'source': 'composite',
@@ -183,16 +211,16 @@
             'type': 'fill-extrusion',
             'minzoom': 15,
             'paint': {
-                'fill-extrusion-color': '#0d332b', // Brand Dark Green on buildings
+                'fill-extrusion-color': '#0d332b',
                 'fill-extrusion-height': ['get', 'height'],
                 'fill-extrusion-base': ['get', 'min_height'],
                 'fill-extrusion-opacity': 0.6
             }
         });
 
-        // --- MOCK DATA (Replace with your real GeoJSON later) ---
+        // 2. MOCK DATA SOURCES
         
-        // Traders Data
+        // Traders
         map.addSource('traders-mock', {
             type: 'geojson',
             data: {
@@ -205,18 +233,35 @@
             }
         });
 
-        map.addLayer({
-            'id': 'traders-layer',
-            'type': 'circle',
-            'source': 'traders-mock',
-            'paint': {
-                'circle-radius': 8,
-                'circle-color': '#f7b8d6', // Mission Pink
-                'circle-opacity': 0, // Hidden initially
-                'circle-stroke-width': 1,
-                'circle-stroke-color': '#fff'
-            },
-            'transition': { 'duration': 500 }
+        // Coffee Shops (Specific Data for Hover)
+        map.addSource('coffee-mock', {
+            type: 'geojson',
+            data: {
+                "type": "FeatureCollection",
+                "features": [
+                    { "type": "Feature", "properties": { "name": "Motherland Coffee" }, "geometry": { "type": "Point", "coordinates": [18.4198, -33.9242] } },
+                    { "type": "Feature", "properties": { "name": "Mojo Coffee" }, "geometry": { "type": "Point", "coordinates": [18.4195, -33.9240] } },
+                    { "type": "Feature", "properties": { "name": "Happy Hippo" }, "geometry": { "type": "Point", "coordinates": [18.4199, -33.9239] } }
+                ]
+            }
+        });
+
+        // Delivery Bike Routes (LineString)
+        map.addSource('delivery-mock', {
+            type: 'geojson',
+            data: {
+                "type": "FeatureCollection",
+                "features": [
+                    // Main flow
+                    { "type": "Feature", "geometry": { "type": "LineString", "coordinates": [
+                        [18.4195, -33.9243], [18.4199, -33.9239], [18.4202, -33.9236], [18.4206, -33.9232]
+                    ]}},
+                    // Offshoot 1
+                    { "type": "Feature", "geometry": { "type": "LineString", "coordinates": [
+                        [18.4199, -33.9239], [18.4194, -33.9235] // Shooting off into side street
+                    ]}}
+                ]
+            }
         });
 
         // Counts Data
@@ -230,26 +275,114 @@
             }
         });
 
+
+        // 3. ADD LAYERS
+
+        // Layer: Delivery Bikes (Animated Line)
+        map.addLayer({
+            'id': 'delivery-layer',
+            'type': 'line',
+            'source': 'delivery-mock',
+            'paint': {
+                'line-color': '#faf7f5', // Mission White
+                'line-width': 4,
+                'line-opacity': 0, // Hidden initially
+                'line-dasharray': [0, 4, 3] // The gaps that will move
+            }
+        });
+
+        // Layer: Coffee Shops
+        map.addLayer({
+            'id': 'coffee-layer',
+            'type': 'circle',
+            'source': 'coffee-mock',
+            'paint': {
+                'circle-radius': 7,
+                'circle-color': '#ff8533', // Mission Orange
+                'circle-opacity': 0, // Hidden initially
+                'circle-stroke-width': 2,
+                'circle-stroke-color': '#0d332b'
+            }
+        });
+
+        // Layer: Traders
+        map.addLayer({
+            'id': 'traders-layer',
+            'type': 'circle',
+            'source': 'traders-mock',
+            'paint': {
+                'circle-radius': 8,
+                'circle-color': '#f7b8d6', // Mission Pink
+                'circle-opacity': 0, 
+                'circle-stroke-width': 1,
+                'circle-stroke-color': '#fff'
+            }
+        });
+
+        // Layer: Counts
         map.addLayer({
             'id': 'counts-layer',
             'type': 'circle',
             'source': 'counts-mock',
             'paint': {
                 'circle-radius': 25,
-                'circle-color': '#ff8533', // Mission Orange
+                'circle-color': '#ff8533', 
                 'circle-opacity': 0, 
                 'circle-blur': 0.4
-            },
-            'transition': { 'duration': 500 }
+            }
         });
+
+        // 4. INTERACTION: COFFEE HOVER POPUPS
+        const popup = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false
+        });
+
+        map.on('mouseenter', 'coffee-layer', (e) => {
+            // Change the cursor style as a UI indicator.
+            map.getCanvas().style.cursor = 'pointer';
+
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const description = e.features[0].properties.name;
+
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+
+            // Populate the popup and set its coordinates
+            popup.setLngLat(coordinates)
+                .setHTML(`<span class="popup-title">${description}</span>`)
+                .addTo(map);
+        });
+
+        map.on('mouseleave', 'coffee-layer', () => {
+            map.getCanvas().style.cursor = '';
+            popup.remove();
+        });
+
+
+        // 5. ANIMATION LOOP (Delivery Bikes)
+        function animateDash() {
+            dashOffset = dashOffset - 0.2; // Speed of the bike stream
+            if (map.getLayer('delivery-layer')) {
+                map.setPaintProperty('delivery-layer', 'line-dashoffset', dashOffset);
+            }
+            requestAnimationFrame(animateDash);
+        }
+        // Start the animation loop
+        animateDash();
+
     });
 
-    // 3. SCROLL INTERACTION
+    // 6. SCROLL INTERACTION
     const scroller = scrollama();
 
     const locations = {
         'intro': { center: [18.4196, -33.9241], zoom: 16, pitch: 0 },
-        'block1': { center: [18.4196, -33.9241], zoom: 18, pitch: 60 },
+        'block1': { center: [18.4196, -33.9241], zoom: 18, pitch: 45 }, // Zoomed in on Upper Mall
         'block2': { center: [18.4202, -33.9236], zoom: 18.5, pitch: 60 },
         'foreshore': { center: [18.4242, -33.9178], zoom: 17, pitch: 45 },
         'overview': { center: [18.422, -33.921], zoom: 15, pitch: 0 }
@@ -275,18 +408,62 @@
                 });
             }
 
-            // Toggle Data Layers
-            if (map.getLayer('traders-layer')) {
-                map.setPaintProperty('traders-layer', 'circle-opacity', layer === 'traders' ? 1 : 0);
+            // --- LOGIC FOR LAYERS PER STEP ---
+            
+            // 1. Intro: Hide all
+            if (loc === 'intro') {
+                toggleLayer('traders-layer', 0);
+                toggleLayer('coffee-layer', 0);
+                toggleLayer('delivery-layer', 0);
+                toggleLayer('counts-layer', 0);
             }
-            if (map.getLayer('counts-layer')) {
-                map.setPaintProperty('counts-layer', 'circle-opacity', layer === 'counts' ? 0.8 : 0);
+
+            // 2. Block 1: Coffee + Delivery
+            if (layer === 'coffee-delivery') {
+                toggleLayer('traders-layer', 0);
+                toggleLayer('coffee-layer', 1);
+                toggleLayer('delivery-layer', 1); // Show the animated stream
+                toggleLayer('counts-layer', 0);
+            }
+
+            // 3. Block 2: Traders
+            if (layer === 'traders') {
+                toggleLayer('traders-layer', 1);
+                toggleLayer('coffee-layer', 0);
+                toggleLayer('delivery-layer', 0);
+                toggleLayer('counts-layer', 0);
+            }
+
+            // 4. Foreshore: Counts
+            if (layer === 'counts') {
+                toggleLayer('traders-layer', 0);
+                toggleLayer('coffee-layer', 0);
+                toggleLayer('delivery-layer', 0);
+                toggleLayer('counts-layer', 0.8);
+            }
+
+            // 5. Overview: Show all
+            if (loc === 'overview') {
+                toggleLayer('traders-layer', 0.5);
+                toggleLayer('coffee-layer', 0.5);
+                toggleLayer('delivery-layer', 0);
+                toggleLayer('counts-layer', 0.5);
             }
             
             // Active Class for CSS styling
             document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
             step.classList.add('active');
         });
+
+    // Helper function to prevent errors if layer doesn't exist yet
+    function toggleLayer(id, opacity) {
+        if (map.getLayer(id)) {
+            // For circle layers use circle-opacity, for line layers use line-opacity
+            const prop = id.includes('line') || id.includes('delivery') ? 'line-opacity' : 'circle-opacity';
+            map.setPaintProperty(id, prop, opacity);
+        }
+    }
+
 </script>
 
 </body>
